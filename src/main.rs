@@ -33,7 +33,15 @@ fn main() {
     let dp = 255;
     println!("P3\n{} {}\n{}", nx, ny, dp);
 
-    let camera = Camera::new();
+    let r = (std::f32::consts::PI / 4_f32).cos();
+    let camera = Camera::new(
+        vec::Vec3(0.0, 0.0, 0.0),
+        vec::Vec3(0.0, 0.0, -2.0),
+        vec::Vec3(0.0, 1.0, 0.0),
+        120.0,
+        nx as f32 / ny as f32
+    );
+
     let world: Vec<Box<dyn Hitable>> = vec![
         Box::new(hitable::Sphere {
             center: vec::Vec3(0_f32, 0_f32, -1_f32),
