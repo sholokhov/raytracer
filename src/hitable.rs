@@ -1,5 +1,4 @@
 use crate::vec;
-use crate::material;
 use crate::material::Material;
 
 #[derive(Clone, Copy)]

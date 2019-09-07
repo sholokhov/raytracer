@@ -70,6 +70,12 @@ impl Mul<Vec3> for Vec3 {
     }
 }
 
+//impl Rand for Vec3 {
+//    fn rand<R: Rng>(rng: &mut R) -> Vec3 {
+//        Vec3(rng.gen(), rng.gen(), rng.gen())
+//    }
+//}
+
 #[derive(Clone, Copy)]
 pub struct Ray {
     pub origin: Vec3,

@@ -4,6 +4,14 @@ pub fn drand() -> f32 {
     rand::random::<f32>().abs()
 }
 
+pub fn rand_vec3() -> vec::Vec3 {
+    vec::Vec3(
+        rand::random::<f32>(),
+        rand::random::<f32>(),
+        rand::random::<f32>(),
+    )
+}
+
 pub fn random_in_unit_sphere() -> vec::Vec3 {
     let mut p;
     loop {
