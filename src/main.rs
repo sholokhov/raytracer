@@ -5,9 +5,25 @@ mod vec;
 mod hitable;
 mod camera;
 
+fn drand() -> f32 {
+    rand::random::<f32>().abs()
+}
+
+fn random_in_unit_sphere() -> vec::Vec3 {
+    let mut p;
+    loop {
+        p = 2.0 * vec::Vec3(drand(), drand(), drand()) - vec::Vec3(1f32, 1f32, 1f32);
+        if p.squared_length() >= 1.0 {
+            break;
+        }
+    }
+    return p;
+}
+
 fn color(ray: &vec::Ray, world: &Vec<Box<dyn hitable::Hitable>>) -> vec::Vec3 {
-    if let Some(hit) = world.hit(ray, 0_f32, std::f32::MAX) {
-        0.5 * vec::Vec3(hit.normal.x() + 1f32, hit.normal.y() + 1f32, hit.normal.z() + 1f32)
+    if let Some(hit) = world.hit(ray, 0.001, std::f32::MAX) {
+        let target = hit.p + hit.normal + random_in_unit_sphere();
+        0.5 * color( &vec::Ray { origin: hit.p, direction: target - hit.p }, world)
     } else {
         let unit_direction = ray.direction.to_unit_vector();
         let t = 0.5_f32 * (unit_direction.y() + 1.0);
@@ -17,8 +33,8 @@ fn color(ray: &vec::Ray, world: &Vec<Box<dyn hitable::Hitable>>) -> vec::Vec3 {
 }
 
 fn main() {
-    let nx = 840;
-    let ny = 480;
+    let nx = 420;
+    let ny = 240;
     let ns = 100;
     let dp = 255;
     println!("P3\n{} {}\n{}", nx, ny, dp);
@@ -39,12 +55,13 @@ fn main() {
         for i in 0..nx {
             let mut col = vec::Vec3(0_f32, 0_f32, 0_f32);
             for _ in 0..ns {
-                let u = (i as f32 + rand::random::<f32>().abs()) / nx as f32;
-                let v = (j as f32 + rand::random::<f32>().abs()) / ny as f32;
+                let u = (i as f32 + drand()) / nx as f32;
+                let v = (j as f32 + drand()) / ny as f32;
                 let ray = camera.ray(u, v);
                 col = col + color(&ray, &world);
             }
             col = col / (ns as f32);
+            col = vec::Vec3(col.x().sqrt(), col.y().sqrt(), col.z().sqrt());
 
             let ir = (255.99 * col.x()) as i32;
             let ig = (255.99 * col.y()) as i32;
