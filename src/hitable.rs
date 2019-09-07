@@ -1,9 +1,13 @@
 use crate::vec;
+use crate::material;
+use crate::material::Material;
 
-pub struct HitRecord {
+#[derive(Clone, Copy)]
+pub struct HitRecord<'a> {
     pub t: f32,
     pub p: vec::Vec3,
-    pub normal: vec::Vec3
+    pub normal: vec::Vec3,
+    pub material: &'a dyn Material
 }
 
 pub trait Hitable {
@@ -12,7 +16,8 @@ pub trait Hitable {
 
 pub struct Sphere {
     pub center: vec::Vec3,
-    pub radius: f32
+    pub radius: f32,
+    pub material: Box<dyn Material>
 }
 
 impl Hitable for Sphere {
@@ -44,7 +49,8 @@ impl Hitable for Sphere {
                     Some(HitRecord {
                         t: root,
                         p: point,
-                        normal: (point - self.center) / self.radius
+                        normal: (point - self.center) / self.radius,
+                        material: &*self.material
                     })
                 } else {
                     None

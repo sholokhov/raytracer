@@ -1,29 +1,23 @@
 use crate::hitable::Hitable;
 use crate::camera::Camera;
 
+use utils::{random_in_unit_sphere, drand};
+use crate::material::{Lambertian, Metal};
+
 mod vec;
 mod hitable;
 mod camera;
+mod material;
+mod utils;
 
-fn drand() -> f32 {
-    rand::random::<f32>().abs()
-}
-
-fn random_in_unit_sphere() -> vec::Vec3 {
-    let mut p;
-    loop {
-        p = 2.0 * vec::Vec3(drand(), drand(), drand()) - vec::Vec3(1f32, 1f32, 1f32);
-        if p.squared_length() >= 1.0 {
-            break;
-        }
-    }
-    return p;
-}
-
-fn color(ray: &vec::Ray, world: &Vec<Box<dyn hitable::Hitable>>) -> vec::Vec3 {
+fn color(ray: &vec::Ray, world: &Vec<Box<dyn hitable::Hitable>>, depth: i8) -> vec::Vec3 {
     if let Some(hit) = world.hit(ray, 0.001, std::f32::MAX) {
-        let target = hit.p + hit.normal + random_in_unit_sphere();
-        0.5 * color( &vec::Ray { origin: hit.p, direction: target - hit.p }, world)
+        let scatter = hit.material.scatter(ray, &hit);
+        if depth < 50 && scatter.ray.is_some() {
+            scatter.attenuation * color(&scatter.ray.unwrap(), world, depth + 1)
+        } else {
+            vec::Vec3(0_f32, 0_f32, 0_f32)
+        }
     } else {
         let unit_direction = ray.direction.to_unit_vector();
         let t = 0.5_f32 * (unit_direction.y() + 1.0);
@@ -33,8 +27,8 @@ fn color(ray: &vec::Ray, world: &Vec<Box<dyn hitable::Hitable>>) -> vec::Vec3 {
 }
 
 fn main() {
-    let nx = 420;
-    let ny = 240;
+    let nx = 200;
+    let ny = 100;
     let ns = 100;
     let dp = 255;
     println!("P3\n{} {}\n{}", nx, ny, dp);
@@ -43,11 +37,33 @@ fn main() {
     let world: Vec<Box<dyn Hitable>> = vec![
         Box::new(hitable::Sphere {
             center: vec::Vec3(0_f32, 0_f32, -1_f32),
-            radius: 0.5
+            radius: 0.5,
+            material: Box::new(Lambertian {
+                albedo: vec::Vec3(0.8, 0.3, 0.3)
+            })
         }),
         Box::new(hitable::Sphere {
             center: vec::Vec3(0_f32, -100.5, -1_f32),
-            radius: 100_f32
+            radius: 100_f32,
+            material: Box::new(Lambertian {
+                albedo: vec::Vec3(0.8, 0.8, 0.0)
+            })
+        }),
+        Box::new(hitable::Sphere {
+            center: vec::Vec3(1_f32, 0_f32, -1_f32),
+            radius: 0.5,
+            material: Box::new(Metal {
+                albedo: vec::Vec3(0.8, 0.6, 0.2),
+                fuzz: 0.3
+            })
+        }),
+        Box::new(hitable::Sphere {
+            center: vec::Vec3(-1_f32, 0_f32, -1_f32),
+            radius: 0.5,
+            material: Box::new(Metal {
+                albedo: vec::Vec3(0.8, 0.8, 0.8),
+                fuzz: 1_f32
+            })
         }),
     ];
 
@@ -58,7 +74,7 @@ fn main() {
                 let u = (i as f32 + drand()) / nx as f32;
                 let v = (j as f32 + drand()) / ny as f32;
                 let ray = camera.ray(u, v);
-                col = col + color(&ray, &world);
+                col = col + color(&ray, &world, 0);
             }
             col = col / (ns as f32);
             col = vec::Vec3(col.x().sqrt(), col.y().sqrt(), col.z().sqrt());
