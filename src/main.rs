@@ -1,8 +1,9 @@
-use crate::vec::Ray;
 use crate::hitable::Hitable;
+use crate::camera::Camera;
 
 mod vec;
 mod hitable;
+mod camera;
 
 fn color(ray: &vec::Ray, world: &Vec<Box<dyn hitable::Hitable>>) -> vec::Vec3 {
     if let Some(hit) = world.hit(ray, 0_f32, std::f32::MAX) {
@@ -18,16 +19,11 @@ fn color(ray: &vec::Ray, world: &Vec<Box<dyn hitable::Hitable>>) -> vec::Vec3 {
 fn main() {
     let nx = 840;
     let ny = 480;
+    let ns = 100;
     let dp = 255;
     println!("P3\n{} {}\n{}", nx, ny, dp);
 
-    let llc = vec::Vec3(-2.0, -1.0, -1.0);
-    let hor = vec::Vec3(4.0, 0.0, 0.0);
-    let ver = vec::Vec3(0.0, 2.0, 0.0);
-    let org = vec::Vec3(0.0, 0.0, 0.0);
-
-
-
+    let camera = Camera::new();
     let world: Vec<Box<dyn Hitable>> = vec![
         Box::new(hitable::Sphere {
             center: vec::Vec3(0_f32, 0_f32, -1_f32),
@@ -41,11 +37,14 @@ fn main() {
 
     for j in (0..ny-1).rev() {
         for i in 0..nx {
-            let u = i as f32 / nx as f32;
-            let v = j as f32 / ny as f32;
-
-            let ray = Ray::new(org, llc + u * hor + v * ver);
-            let col = color(&ray, &world);
+            let mut col = vec::Vec3(0_f32, 0_f32, 0_f32);
+            for _ in 0..ns {
+                let u = (i as f32 + rand::random::<f32>().abs()) / nx as f32;
+                let v = (j as f32 + rand::random::<f32>().abs()) / ny as f32;
+                let ray = camera.ray(u, v);
+                col = col + color(&ray, &world);
+            }
+            col = col / (ns as f32);
 
             let ir = (255.99 * col.x()) as i32;
             let ig = (255.99 * col.y()) as i32;
