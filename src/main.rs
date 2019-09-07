@@ -2,7 +2,7 @@ use crate::hitable::Hitable;
 use crate::camera::Camera;
 
 use utils::{random_in_unit_sphere, drand};
-use crate::material::{Lambertian, Metal};
+use crate::material::{Lambertian, Metal, Dielectric};
 
 mod vec;
 mod hitable;
@@ -60,9 +60,15 @@ fn main() {
         Box::new(hitable::Sphere {
             center: vec::Vec3(-1_f32, 0_f32, -1_f32),
             radius: 0.5,
-            material: Box::new(Metal {
-                albedo: vec::Vec3(0.8, 0.8, 0.8),
-                fuzz: 1_f32
+            material: Box::new(Dielectric {
+                ref_idx: 1.5
+            })
+        }),
+        Box::new(hitable::Sphere {
+            center: vec::Vec3(-1_f32, 0_f32, -1_f32),
+            radius: -0.45,
+            material: Box::new(Dielectric {
+                ref_idx: 1.5
             })
         }),
     ];
