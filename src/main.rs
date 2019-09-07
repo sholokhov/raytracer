@@ -94,12 +94,17 @@ fn random_scene() -> Box<Vec<Box<dyn Hitable>>> {
     Box::new(world)
 }
 
+struct RGB {
+    r: u8,
+    g: u8,
+    b: u8,
+}
+
 fn main() {
     let nx = 800;
     let ny = 400;
     let ns = 100;
     let dp = 255;
-    println!("P3\n{} {}\n{}", nx, ny, dp);
 
     let lookfrom = Vec3(20.0 * 0.47f32.cos(), 20.0 * 0.47f32.sin(), 3.0);
     let lookat = Vec3(0.0, 0.0, 1.0);
@@ -117,6 +122,7 @@ fn main() {
     );
 
     let world: Vec<Box<dyn Hitable>> = *random_scene();
+    let mut pixels: Vec<RGB> = Vec::with_capacity(nx * ny);
 
     for j in (0..ny-1).rev() {
         for i in 0..nx {
@@ -130,12 +136,18 @@ fn main() {
             col = col / (ns as f32);
             col = Vec3(col.x().sqrt(), col.y().sqrt(), col.z().sqrt());
 
-            let ir = (255.99 * col.x()) as i32;
-            let ig = (255.99 * col.y()) as i32;
-            let ib = (255.99 * col.z()) as i32;
+            let ir = (255.99 * col.x()) as u8;
+            let ig = (255.99 * col.y()) as u8;
+            let ib = (255.99 * col.z()) as u8;
 
-            println!("{} {} {}", ir, ig, ib)
+            pixels.push(RGB { r: ir, g: ig, b: ib });
         }
+    }
+
+    // dump image
+    println!("P3\n{} {}\n{}", nx, ny, dp);
+    for p in pixels {
+        println!("{} {} {}", p.r, p.g, p.b)
     }
 
 }
