@@ -33,13 +33,17 @@ fn main() {
     let dp = 255;
     println!("P3\n{} {}\n{}", nx, ny, dp);
 
-    let r = (std::f32::consts::PI / 4_f32).cos();
+    let lookfrom = vec::Vec3(3.0, 3.0, 2.0);
+    let lookat = vec::Vec3(0.0, 0.0, -1.0);
+    let dist_to_focus = (lookfrom - lookat).length();
     let camera = Camera::new(
-        vec::Vec3(0.0, 0.0, 0.0),
-        vec::Vec3(0.0, 0.0, -2.0),
+        lookfrom,
+        lookat,
         vec::Vec3(0.0, 1.0, 0.0),
-        120.0,
-        nx as f32 / ny as f32
+        20.0,
+        nx as f32 / ny as f32,
+        2.0,
+        dist_to_focus
     );
 
     let world: Vec<Box<dyn Hitable>> = vec![
